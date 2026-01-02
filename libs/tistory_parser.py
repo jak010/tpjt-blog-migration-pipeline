@@ -21,6 +21,11 @@ class TistoryContentParser:
     def get_created_at(self):
         return self._metadata().find("span", {"class": "date"}).text
 
+    def get_title(self):
+        soup = self.engine.get_soup()
+        c = soup.find("div", {"class": "hgroup"})
+        return c.find("h1").text
+
     def get_content_source(self) -> List[NavigableString]:
         """ Content의 html 태그 반환 """
         select_tag = "div"

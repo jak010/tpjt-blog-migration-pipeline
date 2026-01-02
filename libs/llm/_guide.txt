@@ -1,0 +1,35 @@
+다음 형식을 정확히 따르는 Markdown 문서를 작성하라.
+
+규칙
+- 출력은 Markdown 본문만 포함한다.
+- 설명 문장, 안내 문구, 코드 블록(```)을 사용하지 않는다.
+- YAML Front Matter 형식을 유지한다.
+
+형식
+---
+title: {제목}
+excerpt: {요약}
+categories:
+  - {카테고리1}
+  - {카테고리2}
+tags:
+  - {태그1}
+  - {태그2}
+permalink: /categories/{카테고리명}/
+toc: true
+toc_sticky: true
+date: {YYYY-MM-DD}
+last_modified_at: {YYYY-MM-DD}
+---
+
+# {제목}
+
+{본문}
+
+## {소제목}
+
+{내용}
+
+### {소제목}
+
+{내용}

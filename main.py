@@ -1,6 +1,7 @@
 from libs.engine import Engine
-from libs.gemini import GeminiLLM
+from libs.llm.gemini import GeminiLLM
 from libs.tistory_parser import TistoryContentParser
+from libs.export.template import MarkDownExportTemplate
 
 x = 482
 url = f"https://jakpentest.tistory.com/{x}"
@@ -18,8 +19,9 @@ file_content = content.get_content_source()
 llm = GeminiLLM()
 result = llm.execute('\n\n'.join(file_content))
 
-import datetime
-
-f = open(f"./{datetime.datetime.now()}.md", "a")
-f.write(result.text)
-f.close()
+# Markdown Export
+exporter = MarkDownExportTemplate(
+    file_name=content.get_title(),
+    file_content=result.text
+)
+exporter.execute()
