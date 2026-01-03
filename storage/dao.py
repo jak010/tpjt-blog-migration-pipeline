@@ -14,7 +14,7 @@ class FileDao:
         with open(self.file_path, "r+", encoding="utf-8") as f:
             return json.load(f)
 
-    def get_accessable_post(self, depth: int = 5):
+    def get_accessable_post(self, depth: int):
         """ 접근 가능한 게시글 가져오기
 
         depth : 최근 게시글에서부터 가져올 item 수
@@ -26,23 +26,22 @@ class FileDao:
             for each in storage:
                 item = storage.get(each)
 
-                if not item.get("is_saved"):
+                if item.get("is_saved") is None:
                     result.append(item)
 
-            return result[:depth + 1]
+            return result[:depth]
 
     def prepare(self, save_index: str):
         """ 저장 대상인 데이터 초기화 """
         _index = str(save_index)
 
+        _data = self._initialize(_index, is_saved=None)
         with open(self.file_path, "r+", encoding="utf-8") as f:
             storage = json.load(f)
             if storage.get(_index):
                 raise AlreadySavedException("이미 저장된 게시글")
 
-            _data = self._initialize(_index, is_saved=None)
             storage.update(_data)
-
             f.seek(0)
             f.flush()
             f.write(json.dumps(storage))
@@ -51,12 +50,13 @@ class FileDao:
         """ 저장할 수 없는 게시글 초기화 """
         _index = str(save_index)
 
+        _data = self._initialize(_index, is_saved=False)
         with open(self.file_path, "r+", encoding="utf-8") as f:
             storage = json.load(f)
-            if storage.get(_index):
-                raise AlreadySavedException("이미 저장된 게시글")
 
-            _data = self._initialize(_index, is_saved=False)
+            if item := storage.get(_index):
+                if item.get("is_saved"):
+                    raise AlreadySavedException("이미 저장된 게시글")
 
             storage.update(_data)
             f.seek(0)

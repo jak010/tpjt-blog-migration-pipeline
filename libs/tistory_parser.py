@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from functools import lru_cache
 from typing import List, Union
+from typing import TYPE_CHECKING
 
 from bs4 import Tag, NavigableString
 
-from .engine import Engine
+if TYPE_CHECKING:
+    from .engine import Engine
 
 
 class TistoryContentParser:
@@ -17,6 +21,14 @@ class TistoryContentParser:
         soup = self.engine.get_soup()
         metadata = soup.find("div", {"class": "post-meta"})
         return metadata
+
+    def is_secret_post(self):
+        soup = self.engine.get_soup()
+        protected_form = soup.find("form", {"class": "protected_form"})
+
+        if protected_form and protected_form.text.find("보호"):
+            return True
+        return False
 
     def get_created_at(self):
         return self._metadata().find("span", {"class": "date"}).text

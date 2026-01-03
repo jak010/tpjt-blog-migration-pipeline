@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from libs.exceptions import NotAccessableException
-from storage.dao import FileDao
+from libs.tistory_parser import TistoryContentParser
 
 
 class Engine:
@@ -12,9 +12,15 @@ class Engine:
 
     @classmethod
     def initialize(cls, url: str):
+        print(url)
         resp = requests.get(url, headers=cls._HEADERS)
         if resp.status_code != 200:
             raise NotAccessableException()
+
+        parser = TistoryContentParser(cls(resp.text))
+        if parser.is_secret_post():
+            raise NotAccessableException()
+
         return cls(resp.text)
 
     def __init__(self, page_source):
