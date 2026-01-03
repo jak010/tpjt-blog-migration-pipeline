@@ -1,6 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 
+from libs.exceptions import NotAccessableException
+from storage.dao import FileDao
+
 
 class Engine:
     _HEADERS = {
@@ -8,11 +11,10 @@ class Engine:
     }
 
     @classmethod
-    def initialize(cls, url):
+    def initialize(cls, url: str):
         resp = requests.get(url, headers=cls._HEADERS)
         if resp.status_code != 200:
-            raise Exception("이 링크는 접근할 수 없음")
-
+            raise NotAccessableException()
         return cls(resp.text)
 
     def __init__(self, page_source):
