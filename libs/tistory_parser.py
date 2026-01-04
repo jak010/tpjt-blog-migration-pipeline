@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import List, Union
-from typing import TYPE_CHECKING
+from typing import List, Union, TYPE_CHECKING
 
 from bs4 import Tag, NavigableString
 
