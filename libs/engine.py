@@ -17,16 +17,22 @@ class Engine:
         if resp.status_code != 200:
             raise NotAccessableException()
 
-        parser = TistoryContentParser(cls(resp.text))
+        _klass = cls(resp.text, url)
+
+        parser = TistoryContentParser(_klass)
         if parser.is_secret_post():
             raise NotAccessableException()
 
-        return cls(resp.text)
+        return _klass
 
-    def __init__(self, page_source):
+    def __init__(self, page_source, url):
         self.parser = "html.parser"
         self._page_source = page_source
+        self._url = url
 
     def get_soup(self):
         s = BeautifulSoup(self._page_source, self.parser)
         return s
+
+    def get_url(self):
+        return self._url

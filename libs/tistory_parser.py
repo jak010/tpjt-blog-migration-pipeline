@@ -14,6 +14,12 @@ class TistoryContentParser:
     def __init__(self, engine):
         self.engine: Engine = engine
 
+    def get_post_number(self):
+        url = self.engine.get_url()
+        post_number = url.split("/")[-1]
+
+        return post_number
+
     @lru_cache(maxsize=1)
     def _metadata(self):
         """ Tisotry 게시글 메타데이터 """

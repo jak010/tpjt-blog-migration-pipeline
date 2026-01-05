@@ -1,39 +1,67 @@
+from typing import List
+
 from libs.engine import Engine
+from libs.export.template import MarkDownExportTemplate
 from libs.llm.gemini import GeminiLLM
 from libs.tistory_checker import TistoryRSSChecker
 from libs.tistory_parser import TistoryContentParser
 from storage.dao import FileDao
 
-from libs.export.template import MarkDownExportTemplate
 
-# Tistory Parser
-c = TistoryRSSChecker()
+class Application:
 
-file_dao = FileDao()
-r = file_dao.get_accessable_post(depth=3)
+    def __init__(self):
+        self.tistory_rss_checker = TistoryRSSChecker()
+        self.dao = FileDao()
+        self.llm = GeminiLLM()
 
-contents = [
-    TistoryContentParser(
-        Engine.initialize(
-            f"https://jakpentest.tistory.com/{post.get('id')}"
+    def test(self):
+        c = self.dao.update(482, False)
+        print(c)
+
+    def get_latest_content(self) -> List[TistoryContentParser]:
+        _depth = 3  # 가져올 포스팅 수
+        latest_posts = self.dao.get_accessable_post(depth=_depth)
+
+        result = []
+        for post in latest_posts:
+            result.append(
+                TistoryContentParser(
+                    Engine.initialize(
+                        f"https://jakpentest.tistory.com/{post.get('id')}"
+                    )
+                )
+            )
+
+        return result
+
+    def generated_content(self, content):
+        try:
+            return self.llm.execute('\n\n'.join(content)).text
+        except Exception as e:
+            raise e
+
+    def execute(self):
+        """ Markdown Export """
+        contents = self.get_latest_content()
+
+        content = contents[0]
+
+        generated_content = self.generated_content(
+            content.get_content_source()
         )
-    )
-    for post in r
-]
+        if generated_content:
+            self.dao.update(content.get_post_number(), True)
 
-content = contents[0]
+        exporter = MarkDownExportTemplate(
+            file_name=content.get_title(),
+            file_content=self.generated_content(
+                content.get_content_source()
+            )
+        )
+        exporter.execute()
 
-file_created_at = content.get_created_at()
-file_content = content.get_content_source()
 
-
-# content make
-llm = GeminiLLM()
-result = llm.execute('\n\n'.join(file_content))
-
-# Markdown Export
-exporter = MarkDownExportTemplate(
-    file_name=content.get_title(),
-    file_content=result.text
-)
-exporter.execute()
+if __name__ == '__main__':
+    app = Application()
+    app.execute()

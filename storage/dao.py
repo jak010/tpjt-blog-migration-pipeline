@@ -31,6 +31,23 @@ class FileDao:
 
             return result[:depth]
 
+    def update(self, index: str, is_saved: Optional[bool]):
+        """ 저장 대상인 데이터 초기화 """
+        _index = str(index)
+
+        _update_data = self._initialize(_index, is_saved=is_saved)
+
+        with open(self.file_path, "r+", encoding="utf-8") as f:
+            storage: dict = json.load(f)
+
+            # update
+            storage[_index] = _update_data[_index]
+
+            # file rewrite
+            f.seek(0)
+            f.truncate()
+            f.write(json.dumps(storage))
+
     def prepare(self, save_index: str):
         """ 저장 대상인 데이터 초기화 """
         _index = str(save_index)
@@ -43,7 +60,7 @@ class FileDao:
 
             storage.update(_data)
             f.seek(0)
-            f.flush()
+            f.truncate()
             f.write(json.dumps(storage))
 
     def unsave(self, save_index: str):
@@ -60,7 +77,7 @@ class FileDao:
 
             storage.update(_data)
             f.seek(0)
-            f.flush()
+            f.truncate()
             f.write(json.dumps(storage))
 
     def _initialize(self, index, is_saved: Optional[bool] = None):
