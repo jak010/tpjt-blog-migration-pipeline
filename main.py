@@ -3,35 +3,35 @@ from typing import List
 from libs.engine import Engine
 from libs.export.template import MarkDownExportTemplate
 from libs.llm.gemini import GeminiLLM
-from libs.tistory_checker import TistoryRSSChecker
-from libs.tistory_parser import TistoryContentParser
+from libs.tistory import (
+    TistoryRSSChecker,
+    TistoryContentParser,
+    TistoryPostDTO
+)
 from storage.dao import FileDao
 
 
 class Application:
+
+    FETCH_SIZE = 3 # 가져올 포스팅 수
 
     def __init__(self):
         self.tistory_rss_checker = TistoryRSSChecker()
         self.dao = FileDao()
         self.llm = GeminiLLM()
 
-    def test(self):
-        c = self.dao.update(482, False)
-        print(c)
+    def get_latest_content(self) -> List[TistoryPostDTO]:
+        latest_posts = self.dao.get_accessable_post(depth=self.FETCH_SIZE)
 
-    def get_latest_content(self) -> List[TistoryContentParser]:
-        _depth = 3  # 가져올 포스팅 수
-        latest_posts = self.dao.get_accessable_post(depth=_depth)
-
-        result = []
+        result: List[TistoryPostDTO] = []
         for post in latest_posts:
-            result.append(
-                TistoryContentParser(
-                    Engine.initialize(
-                        f"https://jakpentest.tistory.com/{post.get('id')}"
-                    )
+            parser = TistoryContentParser(
+                Engine.initialize(
+                    f"https://jakpentest.tistory.com/{post.get('id')}"
                 )
             )
+
+            result.append(parser.to_post())
 
         return result
 
@@ -43,20 +43,20 @@ class Application:
 
     def execute(self):
         """ Markdown Export """
-        contents = self.get_latest_content()
 
-        content = contents[0]
+        tistory_posts = self.get_latest_content()
+        tistory_post = tistory_posts[0]
 
         generated_content = self.generated_content(
-            content.get_content_source()
+            tistory_post.content
         )
         if generated_content:
-            self.dao.update(content.get_post_number(), True)
+            self.dao.update(tistory_post.post_number, True)
 
         exporter = MarkDownExportTemplate(
-            file_name=content.get_title(),
+            file_name=tistory_post.title,
             file_content=self.generated_content(
-                content.get_content_source()
+                tistory_post.content
             )
         )
         exporter.execute()

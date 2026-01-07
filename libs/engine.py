@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from libs.exceptions import NotAccessableException
-from libs.tistory_parser import TistoryContentParser
+from libs.tistory import TistoryContentParser
 
 
 class Engine:

@@ -1,6 +1,6 @@
 from libs.engine import Engine
 from libs.exceptions import NotAccessableException
-from libs.tistory_checker import TistoryRSSChecker
+from libs.tistory import TistoryRSSChecker
 from storage.dao import FileDao
 
 rss_check = TistoryRSSChecker()
